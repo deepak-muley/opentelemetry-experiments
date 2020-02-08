@@ -1,0 +1,84 @@
+version: '3.3'
+services:
+    golang_service_promclient:
+        container_name: golang_service_promclient
+        image: golang_service_promclient
+        build:
+            context: ./golang_service_promclient
+            dockerfile: Dockerfile
+        ports:
+        - "8009:8009"
+        restart: always 
+        networks:
+            - monitor-net
+    golang_service_occlient:
+        container_name: golang_service_occlient
+        image: golang_service_occlient
+        build:
+            context: ./golang_service_occlient
+            dockerfile: Dockerfile
+        ports:
+        - "8010:8010"
+        restart: always 
+        networks:
+            - monitor-net
+        depends_on: 
+            - zipkin
+    prometheus:
+        image: prom/prometheus:latest
+        volumes:
+            - ./prometheus/:/etc/prometheus/
+            - prometheus_data:/prometheus            
+        command:
+            - '--config.file=/etc/prometheus/prometheus.yml'
+            - '--storage.tsdb.path=/prometheus'
+            - '--web.console.libraries=/etc/prometheus/console_libraries'
+            - '--web.console.templates=/etc/prometheus/consoles'
+            - '--storage.tsdb.retention=200h'
+            - '--web.enable-lifecycle'
+        restart: unless-stopped
+        expose:
+            - 9090
+        ports:
+            - '9090:9090'
+        depends_on: 
+            - golang_service_promclient
+            - golang_service_occlient
+        networks:
+            - monitor-net
+    grafana:
+        image: grafana/grafana:latest
+        container_name: grafana
+        volumes:
+            - grafana_data:/var/lib/grafana
+        #   - ./grafana/datasources:/etc/grafana/datasources
+        #   - ./grafana/dashboards:/etc/grafana/dashboards
+        #   - ./grafana/setup.sh:/setup.sh
+        # entrypoint: /setup.sh
+        environment:
+            - GF_SECURITY_ADMIN_USER=${ADMIN_USER:-admin}
+            - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+            - GF_USERS_ALLOW_SIGN_UP=false
+        restart: unless-stopped
+        expose:
+            - 3000
+        ports:
+            - 3000:3000
+        networks:
+            - monitor-net
+    zipkin:
+        image: openzipkin/zipkin
+        container_name: zipkin
+        expose:
+            - 9411
+        ports:
+            - 9411:9411
+        networks:
+            - monitor-net
+volumes:
+    prometheus_data: {}
+    grafana_data: {}
+    zipkin_data: {}
+networks:
+    monitor-net:
+        driver: bridge

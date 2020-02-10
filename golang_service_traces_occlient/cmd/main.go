@@ -17,9 +17,10 @@ import (
 	zipkinHTTP "github.com/openzipkin/zipkin-go/reporter/http"
 )
 
+// https://opencensus.io/exporters/supported-exporters/go/prometheus/
 func registerPrometheus() *prometheus.Exporter {
 	pe, err := prometheus.NewExporter(prometheus.Options{
-		Namespace: "golang-service-occlient",
+		Namespace: "golang_service_traces_occlient",
 	})
 	if err != nil {
 		log.Fatalf("Failed to create Prometheus exporter: %v", err)
@@ -29,7 +30,7 @@ func registerPrometheus() *prometheus.Exporter {
 }
 
 func registerZipkin() {
-	localEndpoint, err := openzipkin.NewEndpoint("golang-service-occlient", "192.168.1.61:8010")
+	localEndpoint, err := openzipkin.NewEndpoint("golang_service_traces_occlient", "192.168.1.61:8010")
 	if err != nil {
 		log.Fatalf("Failed to create Zipkin exporter: %v", err)
 	}

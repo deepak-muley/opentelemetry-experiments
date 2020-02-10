@@ -30,6 +30,10 @@ scrape_configs:
       static_configs:
       - targets: ['golang_service_promclient:8009'] 
 
-    - job_name: 'golang_service_occlient'
+    - job_name: 'golang_service_traces_occlient'
       static_configs:
-      - targets: ['golang_service_occlient:8010'] 
+      - targets: ['golang_service_traces_occlient:8010'] 
+
+    - job_name: 'golang_service_metrics_occlient'
+      static_configs:
+      - targets: ['golang_service_metrics_occlient:8011'] 

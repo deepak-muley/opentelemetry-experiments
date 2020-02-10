@@ -11,11 +11,22 @@ services:
         restart: always 
         networks:
             - monitor-net
-    golang_service_occlient:
-        container_name: golang_service_occlient
-        image: golang_service_occlient
+    golang_service_metrics_occlient:
+        container_name: golang_service_metrics_occlient
+        image: golang_service_metrics_occlient
         build:
-            context: ./golang_service_occlient
+            context: ./golang_service_metrics_occlient
+            dockerfile: Dockerfile
+        ports:
+        - "8011:8011"
+        restart: always 
+        networks:
+            - monitor-net           
+    golang_service_traces_occlient:
+        container_name: golang_service_traces_occlient
+        image: golang_service_traces_occlient
+        build:
+            context: ./golang_service_traces_occlient
             dockerfile: Dockerfile
         ports:
         - "8010:8010"
@@ -43,7 +54,8 @@ services:
             - '9090:9090'
         depends_on: 
             - golang_service_promclient
-            - golang_service_occlient
+            - golang_service_traces_occlient
+            - golang_service_metrics_occlient
         networks:
             - monitor-net
     grafana:
